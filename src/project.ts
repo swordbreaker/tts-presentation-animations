@@ -5,10 +5,11 @@ import vae from './scenes/vae?scene';
 
 import ttsSystems from './scenes/tts-systems?scene';
 
+import vits from './scenes/vits?scene';
+
 import signals from './scenes/signal?scene';
 
 export default makeProject({
-  name: "tts-system",
-  scenes: [signals],
+  scenes: [vits],
   background: '#141414',
 });

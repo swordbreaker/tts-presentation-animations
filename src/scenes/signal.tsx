@@ -24,7 +24,7 @@ function wave1(x: number){
 }
 
 function wave2(x: number){
-    return Math.cos(x/2);
+    return Math.sin(x/2);
 }
 
 function final_wave(x: number,){
@@ -46,9 +46,11 @@ export default makeScene2D(function* (view) {
     const wave1X = createSignal(-50);
     const wave2X = createSignal(-50);
     const opacyHelperArrows = createSignal(0);
+    const scale = createSignal(45);
+    const amplitudeWavelenght = createSignal(0);
 
     view.add(
-        <Node scale={45}>
+        <Node scale={scale}>
             <Rect position={new Vector2(-w/2, -7)}>
                 <Rect>
                     <Line points={[Vector2.zero.addX(0), new Vector2(w+1, 0)]} lineWidth={0.1} stroke={'gray'}></Line>
@@ -63,8 +65,17 @@ export default makeScene2D(function* (view) {
                     <Line points={points1} stroke={'blue'} lineWidth={0.2}/>
                     <Rect position={new Vector2(w/2, 0)} layout stroke={'white'} lineWidth={0.5} width={w} height={5}/>
                     {/* <Line points={[points1[10], points1[10]().addY(4.2)]} lineWidth={0.1} stroke={'red'}/> */}
-                    <Line points={() => [new Vector2(points1[9]().x, 0), points1[9]()]} lineWidth={0.2} stroke={'red'} end={10} start={-10} startOffset={10} arrowSize={0.3} opacity={opacyHelperArrows}/>
+                    <Line points={() => [new Vector2(points1[9]().x, 0), points1[9]()]} lineWidth={0.2} stroke={'red'} end={10} start={-10} startOffset={10} arrowSize={0.3} opacity={opacyHelperArrows} />
 
+                    <Node scale={amplitudeWavelenght}>
+                        {/* Wavelength */}
+                        <Line points={() => [points1[11], points1[23]().addX(0.4)]} lineWidth={0.1} stroke={'yellow'} end={10} start={-10} startOffset={10} lineDash={[0.1, 0.1]}/>
+                        <Text scale={0.8} text={'wavelenght'} fontSize={1} position={new Vector2(8.4, 1.5)} fill={common.textColor}></Text>
+                        
+                        {/* Ampltude */}
+                        <Line points={() => [new Vector2(points1[5]().x - 0.2, 0), points1[5]().addX(-0.2)]} lineWidth={0.1} stroke={'yellow'} end={10} start={-10} startOffset={10} lineDash={[0.1, 0.1]}/>
+                        <Text scale={0.8} text={'amplitude'} fontSize={1} position={new Vector2(2.5, -1.8)} fill={common.textColor}></Text>
+                    </Node>
                 </Rect>,
                 <Rect position={() => new Vector2(wave2X(), 14)}>
                     <Line points={[Vector2.zero.addX(0), new Vector2(w+1, 0)]} lineWidth={0.1} stroke={'gray'}></Line>
@@ -86,4 +97,8 @@ export default makeScene2D(function* (view) {
         delay(3, wave2X(0, 1, easeOutExpo)),
         delay(4, opacyHelperArrows(1, 0))
         );
+
+    yield * scale(70, 1);
+    yield * opacyHelperArrows(0, 0);
+    yield * amplitudeWavelenght(1, 1);
 });
