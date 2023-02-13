@@ -7,6 +7,7 @@ import { createSignal, SignalValue, SimpleSignal } from '@motion-canvas/core/lib
 import { Center, Color, Vector2 } from '@motion-canvas/core/lib/types';
 const lineColor = "#b1d4d4";
 const cirlceColor = "#195db2";
+import * as common from '../common';
 
 export default makeScene2D(function* (view) {
   const encoderColor = 'red';
@@ -31,21 +32,9 @@ export default makeScene2D(function* (view) {
 
   const lineWidth = 3;
 
-  function trapez(width: number, height: number, rotation: number = 0, position: Vector2 = Vector2.zero, innerDelta: number = 10, fill: string = 'white', ref: Reference<Line> = null, opacity: SignalValue<number> = null) {
-    return <Line
-      closed
-      position={position}
-      rotation={rotation}
-      points={[new Vector2(-width / 2 + innerDelta, 0), new Vector2(width / 2 - innerDelta, 0), new Vector2(width / 2, height), new Vector2(-width / 2, height)]}
-      lineWidth={lineWidth}
-      fill={fill}
-      ref={ref}
-      opacity={opacity}/>
-  }
-
   view.add(
     <>
-      {trapez(380, 220, 90, new Vector2(-85, 0), 80, encoderColor, encoderTrapez)},
+      {common.trapez(380, 220, 80, {position: new Vector2(-85, 0), rotation: 90, fill: encoderColor, ref: encoderTrapez})},
       <Node>
         <Line stroke={lineColor} lineWidth={lineWidth} points={[new Vector2(-380, 0), new Vector2(-304, 0)]} endArrow arrowSize={8}/>
         <Circle fill={'white'} position={new Vector2(-380, 0)} width={40} height={40}/>
@@ -53,7 +42,7 @@ export default makeScene2D(function* (view) {
       </Node>
 
       <Node position={() => new Vector2(decoderShiftX(), 0)}>
-        {trapez(380, 220, -90, new Vector2(85, 0), 80, decoderColor, decoderTrapez)},
+        {common.trapez(380, 220, 80, {position: new Vector2(85, 0), rotation: -90, fill: decoderColor, ref: decoderTrapez})},
         <Node rotation={180}>
             <Line stroke={lineColor} lineWidth={lineWidth} points={[new Vector2(-380, 0), new Vector2(-304, 0)]} endArrow arrowSize={8}/>
             <Circle fill={'white'} position={new Vector2(-380, 0)} width={40} height={40}/>

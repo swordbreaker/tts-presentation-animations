@@ -1,10 +1,11 @@
-import { Line } from "@motion-canvas/2d/lib/components";
+import { Line, LineProps } from "@motion-canvas/2d/lib/components";
 import { SignalValue } from "@motion-canvas/core/lib/signals";
-import { PossibleVector2 } from "@motion-canvas/core/lib/types";
+import { PossibleVector2, Vector2 } from "@motion-canvas/core/lib/types";
+import { Reference } from "@motion-canvas/core/lib/utils";
 
-export const encoderColor = 'red';
+export const encoderColor = '#ff4908';
 export const latentColor = 'green';
-export const decoderColor = 'blue';
+export const decoderColor = '#225689';
 export const transparent = '#00000000';
 export const lineWidth = 3;
 export const lineColor = "white";
@@ -19,4 +20,15 @@ export function createArrow(points: SignalValue<SignalValue<PossibleVector2>[]>)
         arrowSize: arrowSize,
         endArrow: true,
     });
+}
+
+export function trapez(width: number, height: number, innerDelta: number = 10, loneProps: LineProps = {}) {
+    return new Line(
+        {
+            closed: true,
+            points:[new Vector2(-width / 2 + innerDelta, 0), new Vector2(width / 2 - innerDelta, 0), new Vector2(width / 2, height), new Vector2(-width / 2, height)],
+            lineWidth:lineWidth,
+            ...loneProps,
+        }
+    );
 }
