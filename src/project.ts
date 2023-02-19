@@ -10,7 +10,9 @@ import vits2 from './scenes/vits2?scene';
 
 import signals from './scenes/signal?scene';
 
+import gan from './scenes/gan?scene';
+
 export default makeProject({
-  scenes: [vits, vits2],
+  scenes: [vits],
   background: '#141414',
 });

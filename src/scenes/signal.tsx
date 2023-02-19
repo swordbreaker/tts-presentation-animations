@@ -75,6 +75,12 @@ export default makeScene2D(function* (view) {
                         {/* Ampltude */}
                         <Line points={() => [new Vector2(points1[5]().x - 0.2, 0), points1[5]().addX(-0.2)]} lineWidth={0.1} stroke={'yellow'} end={10} start={-10} startOffset={10} lineDash={[0.1, 0.1]}/>
                         <Text scale={0.8} text={'amplitude'} fontSize={1} position={new Vector2(2.5, -1.8)} fill={common.textColor}></Text>
+
+                        {/* one oscillation */}
+                        <Line points={() => [new Vector2(points1[27]().x, 1), new Vector2(points1[39]().x - 0.2, 1)]} lineWidth={0.1} stroke={'yellow'} end={10} start={-10} startOffset={10} lineDash={[0.1, 0.1]} startArrow endArrow arrowSize={0.2}/>
+                        <Line points={() => [new Vector2(points1[27]().x - 0.2, 0), new Vector2(points1[27]().x -0.2, 1)]} lineWidth={0.1} stroke={'yellow'} end={10} start={-10} startOffset={10} lineDash={[0.1, 0.1]}/>
+                        <Line points={() => [new Vector2(points1[39]().x, 0), new Vector2(points1[39]().x, 1)]} lineWidth={0.1} stroke={'yellow'} end={10} start={-10} startOffset={10} lineDash={[0.1, 0.1]}/>
+                        <Text scale={0.8} text={'one oscillation'} fontSize={1} position={new Vector2(16.5, 1.5)} fill={common.textColor}></Text>
                     </Node>
                 </Rect>,
                 <Rect position={() => new Vector2(wave2X(), 14)}>

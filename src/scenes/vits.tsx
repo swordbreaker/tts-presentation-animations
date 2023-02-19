@@ -54,8 +54,6 @@ function createBlocks(n: number, rectProps: RectProps = {}, colors = ['red', 'bl
 }
 
 function makeUpArrow(f1: Node, f2: Node, view: View2D | Node, offset1 = Vector2.zero, offset2 = Vector2.zero){
-    let p1 = () => f1.absolutePosition().addY(f1.cacheRect().top);
-    let p2 = () => f2.absolutePosition().addY(f2.cacheRect().bottom);
     return makeDirectedArrow({f1: f1, f2: f2, anchor1: 'top', anchor2: 'bottom', offset1: offset1, offset2: offset2}, view)
 }
 
@@ -201,7 +199,7 @@ export default makeScene2D(function* (view) {
 
     const z = createBlocks(5, {}, ['red', 'red', 'blue', 'blue', 'green']);
     const fz = createBlocks(5, {}, ['red', 'red', 'blue', 'blue', 'green']);
-    const decoder = createCoder('decoder', 200, {rotation: 180, fill: common.decoderColor});
+    const decoder = createCoder('decoder', 200, {rotation: 180, fill: common.decoderColor}) as Rect;
 
     const encoder = createCoder('posterior encoder', 380, {fill: common.encoderColor});
     const flow = createBlock('flow');
@@ -299,7 +297,40 @@ export default makeScene2D(function* (view) {
         view
     );
 
-    
+    // mark gan
+    const markSignal = createSignal(0);
+    let gan_rect = <Rect
+        width={() => decoder.size().width + 40}
+        height={() => decoder.size().height + 40}
+        stroke="green"
+        lineWidth={3}
+        opacity={markSignal}/> as Rect;
+    view.add(gan_rect);
+    gan_rect.absolutePosition(() => decoder.absolutePosition());
+    let gan_text = new Text({text: 'GAN', fill: 'green', opacity: markSignal})
+        .absolutePosition(() => gan_rect.absolutePosition().add(new Vector2(-200, 0)));
+    view.add(gan_text);
+
+
+    // mark vae
+    let root = view.children()[0];
+    let vae_rect = <Rect
+        width={() => root.cacheRect().size.width + 100}
+        height={() => root.cacheRect().size.height + 20}
+        stroke="yellow"
+        lineWidth={3}
+        opacity={markSignal}/> as Rect;
+    view.add(vae_rect);
+    let text = new Text({
+        text: 'CVAE',
+        fill: 'yellow',
+        opacity: markSignal,
+        position: new Vector2(-890, 0)});
+    view.add(text);
+
+    yield * markSignal(1, 1);
+    yield * markSignal(0, 0);
+
     // convert to inference
     yield * all(
         durationPredictor_noise.opacity(0, 1),
