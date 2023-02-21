@@ -1,6 +1,6 @@
 import { makeScene2D } from '@motion-canvas/2d/lib/scenes';
-import { waitFor } from '@motion-canvas/core/lib/flow';
-import { Circle, Layout, Line, Rect, Node, View2D, Text, RectProps, TextProps, Image, CircleProps, LineProps } from '@motion-canvas/2d/lib/components';
+import { delay, sequence, waitFor } from '@motion-canvas/core/lib/flow';
+import { Circle, Layout, Line, Rect, Node, View2D, Text, RectProps, TextProps, Image, CircleProps, LineProps, Latex } from '@motion-canvas/2d/lib/components';
 import { createRef, makeRef, range, Reference} from '@motion-canvas/core/lib/utils';
 import { all } from '@motion-canvas/core/lib/flow';
 import { createSignal, SignalValue, SimpleSignal, } from '@motion-canvas/core/lib/signals';
@@ -8,21 +8,10 @@ import { Center, Color, PossibleVector2, Vector2 } from '@motion-canvas/core/lib
 import * as common from '../common';
 import monotonicAlignmentSrc from '../imgs/MonoticAlignment.png';
 import { vector2Signal } from '@motion-canvas/2d/lib/decorators';
+import { Drawer } from '../draw';
 
 const blockColor = '#038f61';
 
-type AnchorDirection = 'left' | 'right' | 'bottom' | 'top';
-
-type directedArrowProps = {
-    f1: Node,
-    f2: Node,
-    anchor1?: AnchorDirection,
-    anchor2?: AnchorDirection,
-    edge1?: Vector2,
-    edge2?: Vector2,
-    offset1?: Vector2,
-    offset2?: Vector2,
-}
 
 function createBlock(text: SignalValue<string>, rectProps: RectProps = {}, textProps: TextProps = {}){
 
@@ -51,66 +40,6 @@ function createBlocks(n: number, rectProps: RectProps = {}, colors = ['red', 'bl
         ),
         ...rectProps
     });
-}
-
-function makeUpArrow(f1: Node, f2: Node, view: View2D | Node, offset1 = Vector2.zero, offset2 = Vector2.zero){
-    return makeDirectedArrow({f1: f1, f2: f2, anchor1: 'top', anchor2: 'bottom', offset1: offset1, offset2: offset2}, view)
-}
-
-function makeDownArrow(f1: Node, f2:Node, container: View2D | Node) {
-    return makeDirectedArrow({f1: f1, f2: f2, anchor1: 'bottom', anchor2: 'top'}, container);
-}
-
-function makeRightArrow(f1: Node, f2: Node, offset1: number, offset2:number, view: View2D | Node){
-    return makeArrow(() => {
-        let start = f1.absolutePosition().addX(f1.cacheRect().right);
-        let end = f2.absolutePosition().addX(f2.cacheRect().left);
-        let p1 = start.addX(offset1);
-        let p2 = end.addX(-offset2);
-        return [start, p1, p2, end]
-    }, view);
-}
-
-function makeDirectedArrow(props: directedArrowProps, view: View2D | Node){
-    function getAnchor(node: Node, direction: 'left' | 'right' | 'bottom' | 'top'){
-        switch(direction){
-            case 'left': return new Vector2(node.cacheRect().left, 0);
-            case 'right': return new Vector2(node.cacheRect().right, 0);
-            case 'bottom': return new Vector2(0, node.cacheRect().bottom);
-            case 'top': return new Vector2(0, node.cacheRect().top);
-        }
-    }
-
-    props = {anchor1: 'right', anchor2: 'right', edge1: Vector2.zero, edge2: Vector2.zero, offset1: Vector2.zero, offset2: Vector2.zero, ...props}
-
-    return makeArrow(() => {
-        let start = props.f1.absolutePosition().add(getAnchor(props.f1, props.anchor1)).add(props.offset1);
-        let end = props.f2.absolutePosition().add(getAnchor(props.f2, props.anchor2)).add(props.offset2);
-        let points = [start];
-
-        if (props.edge1 != Vector2.zero){
-            points.push(start.add(props.edge1))
-        }
-        if (props.edge2 != Vector2.zero){
-            points.push(end.add(props.edge2))
-        }
-
-        points.push(end);
-        return points;
-    }, view);
-}
-
-function makeArrow(points: SignalValue<SignalValue<PossibleVector2>[]>, container: View2D | Node) {
-    let l = new Line({points: points, lineWidth: common.lineWidth, stroke: common.lineColor, endArrow: true, arrowSize: common.arrowSize});
-
-    if(container instanceof View2D) {
-        container.add(l);
-    }
-    else {
-        container.children().push(l);
-    }
-    l.absolutePosition(Vector2.zero);
-    return l;
 }
 
 function createMonotonicAlignment(){
@@ -196,7 +125,6 @@ function createCoder(text: string, width=200, lineProps: LineProps = {}, textPro
 }
 
 export default makeScene2D(function* (view) {
-
     const z = createBlocks(5, {}, ['red', 'red', 'blue', 'blue', 'green']);
     const fz = createBlocks(5, {}, ['red', 'red', 'blue', 'blue', 'green']);
     const decoder = createCoder('decoder', 200, {rotation: 180, fill: common.decoderColor}) as Rect;
@@ -224,77 +152,80 @@ export default makeScene2D(function* (view) {
         </Rect>
     )
 
+    const root = createRef<Node>();
+
     view.add(
-    <Node>
-    <Rect layout alignItems={'end'}>
-        <Rect layout alignItems={'center'} direction={'column'} gap={50} ref={leftRect}>
-            {waveform}
-            {decoder}
-            {z}
-            {encoder}
-            {spectogram}
-            {leftBottomSpace}
+    <Node ref={root}>
+        <Rect layout alignItems={'end'}>
+            <Rect layout alignItems={'center'} direction={'column'} gap={50} ref={leftRect}>
+                {waveform}
+                {decoder}
+                {z}
+                {encoder}
+                {spectogram}
+                {leftBottomSpace}
+            </Rect>
+            <Rect layout alignItems={'center'} direction={'column'} gap={50} marginRight={200} marginLeft={200}>
+                {flow}
+                {fz}
+                {alignment}
+                {muSignma}
+                {projection}
+                {hText}
+                {textEncoder}
+                {cText}
+            </Rect>
+            <Rect layout alignItems={'center'} direction={'column'} gap={50}>
+                {durationPredictor}
+                {noise}
+            </Rect>
         </Rect>
-        <Rect layout alignItems={'center'} direction={'column'} gap={50} marginRight={200} marginLeft={200}>
-            {flow}
-            {fz}
-            {alignment}
-            {muSignma}
-            {projection}
-            {hText}
-            {textEncoder}
-            {cText}
-        </Rect>
-        <Rect layout alignItems={'center'} direction={'column'} gap={50}>
-            {durationPredictor}
-            {noise}
-        </Rect>
-    </Rect>
     </Node>);
 
-    const meanVarText = <Text fill={common.textColor}>mean & var</Text>;
-    view.add(meanVarText);
-    meanVarText.absolutePosition(muSignma.absolutePosition().addX(200));
+    const drawer = new Drawer(root());
+
+    const meanVarText = <Latex height={30} tex="{\color{white} \mu, \sigma}"></Latex>;
+    root().add(meanVarText);
+    meanVarText.absolutePosition(muSignma.absolutePosition().addX(150));
     
     // arrows
-    const textEncoder_hText = makeUpArrow(textEncoder, hText, view, new Vector2(0, 25), new Vector2(0, -5));
-    const hText_projection = makeUpArrow(hText, projection, view);
-    const projection_muSignma =makeUpArrow(projection, muSignma, view);
-    const muSignma_alignment =makeUpArrow(muSignma, alignment, view);
-    const flow_fz = makeDownArrow(flow, fz, view);
-    const fz_alignment =makeDownArrow(fz, alignment, view);
+    const textEncoder_hText = drawer.makeUpArrow(textEncoder, hText, root(), new Vector2(0, 25), new Vector2(0, -5));
+    const hText_projection = drawer.makeUpArrow(hText, projection);
+    const projection_muSignma = drawer.makeUpArrow(projection, muSignma);
+    const muSignma_alignment = drawer.makeUpArrow(muSignma, alignment, root());
+    const flow_fz = drawer.makeDownArrow(flow, fz, root());
+    const fz_alignment = drawer.makeDownArrow(fz, alignment, root());
 
-    const encoder_z = makeUpArrow(encoder, z, view, new Vector2(0, 25), new Vector2(0, -5));
+    const encoder_z = drawer.makeUpArrow(encoder, z, root(), new Vector2(0, 25), new Vector2(0, -5));
 
-    const z_decoder = makeDirectedArrow({f1: z, f2: decoder, anchor1:'top', anchor2: 'bottom', offset2: new Vector2(0, -20)}, view);
-    // makeUpArrow(z, dedocer, view);
+    const z_decoder = drawer.makeDirectedArrow({f1: z, f2: decoder, anchor1:'top', anchor2: 'bottom', offset2: new Vector2(0, -20)});
+    // makeUpArrow(z, dedocer, root());
 
-    const cText_textEncoder = makeUpArrow(cText, textEncoder, view, new Vector2(0, 0), new Vector2(0, -20));
+    const cText_textEncoder = drawer.makeUpArrow(cText, textEncoder, root(), new Vector2(0, 0), new Vector2(0, -20));
 
-    const decoder_waveform = makeDirectedArrow({f1: decoder, f2: waveform, anchor1: 'top', anchor2: 'bottom', offset1: new Vector2(0, 25)}, view);
-    const spectogram_encoder = makeUpArrow(spectogram, encoder, view, Vector2.zero, new Vector2(0, -20));
+    const decoder_waveform = drawer.makeDirectedArrow({f1: decoder, f2: waveform, anchor1: 'top', anchor2: 'bottom', offset1: new Vector2(0, 25)}, root());
+    const spectogram_encoder = drawer.makeUpArrow(spectogram, encoder, root(), Vector2.zero, new Vector2(0, -20));
     
-    const z_flow = makeRightArrow(z, flow, 50, 200, view);
-    const hText_durationPredictor = makeRightArrow(hText, durationPredictor, 50, 50, view);
+    const z_flow = drawer.makeRightArrow(z, flow, {edge1: new Vector2(50, 0), edge2: new Vector2(-200, 0)});
+    const hText_durationPredictor = drawer.makeRightArrow(hText, durationPredictor, {edge1: new Vector2(50, 0), edge2: new Vector2(-50, 0)}, root());
 
-
-    const alignment_durationPredictor = makeDirectedArrow({
+    const alignment_durationPredictor = drawer.makeDirectedArrow({
             f1: alignment,
             f2: durationPredictor,
             anchor1: 'right',
             anchor2: 'top',
             edge1: new Vector2(100, 0),
             edge2: new Vector2(0,-50)},
-        view);
+        root());
 
-    const durationPredictor_noise = makeDirectedArrow(
+    const durationPredictor_noise = drawer.makeDirectedArrow(
         {
             f1: durationPredictor,
             f2: noise,
             anchor1: 'bottom',
             anchor2: 'top'
         },
-        view
+        root()
     );
 
     // mark gan
@@ -313,10 +244,9 @@ export default makeScene2D(function* (view) {
 
 
     // mark vae
-    let root = view.children()[0];
     let vae_rect = <Rect
-        width={() => root.cacheRect().size.width + 100}
-        height={() => root.cacheRect().size.height + 20}
+        width={() => root().cacheRect().size.width + 100}
+        height={() => root().cacheRect().size.height + 20}
         stroke="yellow"
         lineWidth={3}
         opacity={markSignal}/> as Rect;
@@ -330,6 +260,36 @@ export default makeScene2D(function* (view) {
 
     yield * markSignal(1, 1);
     yield * markSignal(0, 0);
+
+    // draw GAN
+    drawer.fillColor = '#ff7e33';
+    const disc = drawer.createBlock("Discriminator");
+    disc.absolutePosition(() => decoder.absolutePosition().addX(-700))
+    root().add(disc);
+
+    yield * all(
+        delay(0.6, root().position(root().position().addX(50), 0.4)),
+        disc.absolutePosition(decoder.absolutePosition().addX(-250), 1)
+        );
+
+    drawer.fillColor = "#038f61";
+    const gen = drawer.createBlock("Generator").opacity(0);
+    root().add(gen);
+    gen.absolutePosition(() => decoder.absolutePosition());
+    yield * gen.opacity(1, 1);
+    const gen_disc = drawer.makeLefttArrow(gen, disc).opacity(0);
+    const update_g = drawer.makeDirectedArrow({f1: disc, f2:gen, edge1: new Vector2(0, 25), edge2: new Vector2(0, 25), offset1: new Vector2(80, 0), offset2: new Vector2(-80, 0), anchor1: "bottom", anchor2: "bottom"}).stroke('green').lineDash([5, 5]).opacity(0);
+
+    yield * all(
+        gen_disc.opacity(1, 1),
+        update_g.opacity(1, 1))
+
+    yield * all(
+        gen_disc.opacity(0, 1),
+        update_g.opacity(0, 1),
+        disc.opacity(0, 1),
+        gen.opacity(0, 1)
+    )
 
     // convert to inference
     yield * all(
@@ -345,11 +305,11 @@ export default makeScene2D(function* (view) {
         muSignma_alignment.opacity(0, 1));
 
     yield * leftBottomSpace.size(new Vector2(0, 450), 1);
-    const flow_z = makeDirectedArrow({f1: flow, f2: z, anchor1: 'left', anchor2: 'right', edge1: new Vector2(-50, 0), edge2: new Vector2(50, 0)}, view).opacity(0);
-    // const alignment_fz = makeUpArrow(alignment, fz, view).opacity(0);
-    const fz_flow_fz = makeUpArrow(fz, flow, view).opacity(0);
-    const durationPre_alignment = makeDirectedArrow({f1: durationPredictor, f2: alignment, anchor1: 'top', edge1: new Vector2(0, -100), edge2: new Vector2(100, 0)}, view);
-    const noise_durationPredictor = makeUpArrow(noise, durationPredictor, view);
+    const flow_z = drawer.makeDirectedArrow({f1: flow, f2: z, anchor1: 'left', anchor2: 'right', edge1: new Vector2(-50, 0), edge2: new Vector2(50, 0)}, root()).opacity(0);
+    // const alignment_fz = makeUpArrow(alignment, fz, root()).opacity(0);
+    const fz_flow_fz = drawer.makeUpArrow(fz, flow, root()).opacity(0);
+    const durationPre_alignment = drawer.makeDirectedArrow({f1: durationPredictor, f2: alignment, anchor1: 'top', edge1: new Vector2(0, -100), edge2: new Vector2(100, 0)}, root());
+    const noise_durationPredictor = drawer.makeUpArrow(noise, durationPredictor, root());
 
     yield * all(
         flow_z.opacity(1, 1),

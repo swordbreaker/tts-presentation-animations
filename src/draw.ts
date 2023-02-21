@@ -54,6 +54,7 @@ export class Drawer {
     createBlock(text: SignalValue<string>, rectProps: RectProps = {}, textProps: TextProps = {}) {
         return new Rect({
             children: [new Text({ text: text, ...textProps, textWrap: "pre", fill: common.textColor })],
+            layout: true,
             justifyContent: "center",
             alignItems: "center",
             stroke: this.strokeColor,
@@ -134,14 +135,14 @@ export class Drawer {
         );
     }
 
-    makeLefttArrow(f1: Node, f2: Node, view: View2D | Node = this.container, directedArrowProps: PartialDirectedArrowProps) {
+    makeLefttArrow(f1: Node, f2: Node, view: View2D | Node = this.container, directedArrowProps: PartialDirectedArrowProps = {}) {
         return this.makeDirectedArrow(
             { f1: f1, f2: f2, anchor1: "left", anchor2: "right", ...directedArrowProps },
             view,
         );
     }
 
-    makeDirectedArrow(props: DirectedArrowProps, view: View2D | Node = this.container) {
+    makeDirectedArrow(props: DirectedArrowProps, container: View2D | Node = this.container) {
         function getAnchor(node: Node, direction: "left" | "right" | "bottom" | "top") {
             switch (direction) {
                 case "left":
@@ -166,8 +167,14 @@ export class Drawer {
         };
 
         return this.makeArrow(() => {
-            let start = props.f1.absolutePosition().add(getAnchor(props.f1, props.anchor1)).add(props.offset1);
-            let end = props.f2.absolutePosition().add(getAnchor(props.f2, props.anchor2)).add(props.offset2);
+            let relativeOffset1 = props.offset1.transform(container.worldToLocal());
+            let relativeOffset2 = props.offset2.transform(container.worldToLocal());
+    
+            let relaiveAnchor1 = getAnchor(props.f1, props.anchor1).transform(container.worldToLocal());
+            let relaiveAnchor2 = getAnchor(props.f2, props.anchor2).transform(container.worldToLocal());
+
+            let start = props.f1.absolutePosition().add(relaiveAnchor1).add(relativeOffset1);
+            let end = props.f2.absolutePosition().add(relaiveAnchor2).add(relativeOffset2);
             let points = [start];
 
             if (props.edge1 != Vector2.zero) {
@@ -179,24 +186,22 @@ export class Drawer {
 
             points.push(end);
             return points;
-        }, view);
+        }, container);
     }
 
-    makeArrow(points: SignalValue<SignalValue<PossibleVector2>[]>, container: View2D | Node = this.container) {
+    
+    // SignalValue<SignalValue<PossibleVector2>[]>
+    makeArrow(points: (() => Vector2[]), container: View2D | Node = this.container) {
         let l = new Line({
-            points: points,
+            position: Vector2.zero,
+            points: () => points().map(p => p.transformAsPoint(container.worldToLocal())),
             lineWidth: common.lineWidth,
             stroke: this.strokeColor,
             endArrow: true,
             arrowSize: common.arrowSize,
         });
-
-        if (container instanceof View2D) {
-            container.add(l);
-        } else {
-            container.children().push(l);
-        }
-        l.absolutePosition(Vector2.zero);
+        container.add(l);
+        // l.absolutePosition(Vector2.zero);
         return l;
     }
 }

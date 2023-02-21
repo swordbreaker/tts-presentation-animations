@@ -1,19 +1,17 @@
 import { makeScene2D } from '@motion-canvas/2d/lib/scenes';
 import { waitFor } from '@motion-canvas/core/lib/flow';
-import { Circle, Layout, Line, Rect, Node, View2D, Text } from '@motion-canvas/2d/lib/components';
+import { Circle, Layout, Line, Rect, Node, View2D, Text, Latex } from '@motion-canvas/2d/lib/components';
 import { createRef, makeRef, range, Reference } from '@motion-canvas/core/lib/utils';
 import { all } from '@motion-canvas/core/lib/flow';
 import { createSignal, SignalValue, SimpleSignal } from '@motion-canvas/core/lib/signals';
 import { Center, Color, Vector2 } from '@motion-canvas/core/lib/types';
-const lineColor = "#b1d4d4";
-const cirlceColor = "#195db2";
+const lineColor = common.lineColor;
 import * as common from '../common';
 
 export default makeScene2D(function* (view) {
-  const encoderColor = 'red';
-  const latentColor = 'green';
-  const decoderColor = 'blue';
-  const transparent = '#00000000';
+  const encoderColor = common.encoderColor;
+  const latentColor = common.latentColor;
+  const decoderColor = common.decoderColor;
 
   const latentSpaceText = createRef<Text>();
   const encoderText = createRef<Text>();
@@ -28,7 +26,6 @@ export default makeScene2D(function* (view) {
   const latentSpacePosY = createSignal(220);
   const decoderShiftX = createSignal(0);
   const cvaeOpacity = createSignal(0);
-
 
   const lineWidth = 3;
 
@@ -66,8 +63,10 @@ export default makeScene2D(function* (view) {
         <Line stroke={lineColor} lineWidth={lineWidth} points={[new Vector2(40, -120), new Vector2(85+50, -40)]} endArrow arrowSize={8} />
         <Line stroke={lineColor} lineWidth={lineWidth} points={[new Vector2(165+50, 0), new Vector2(165+45+50, 0)]} endArrow arrowSize={8} />
 
-        <Text text={'std'} position={new Vector2(0, 0)} fill={lineColor} ref={encoderText} />
-        <Text text={'mean'} position={new Vector2(0, 220)} fill={lineColor} ref={encoderText} />
+        <Latex height={30} tex="{\color{white} \sigma}" position={new Vector2(0, 0)}></Latex>
+        {/* <Text text={'std'} position={new Vector2(0, 0)} fill={lineColor} ref={encoderText} /> */}
+        {/* <Text text={'mean'} position={new Vector2(0, 220)} fill={lineColor} ref={encoderText} /> */}
+        <Latex height={30} tex="{\color{white} \mu}" position={new Vector2(0, 225)}></Latex>
         <Text text={'sampled latent'} position={new Vector2(200, 160)} fill={lineColor} ref={encoderText} />
         <Text text={'vector'} position={new Vector2(200, 210)} fill={lineColor} ref={encoderText} />
       </Node>
