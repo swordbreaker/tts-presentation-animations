@@ -7,6 +7,7 @@ import { createSignal, SignalValue, SimpleSignal } from '@motion-canvas/core/lib
 import { Center, Color, Vector2 } from '@motion-canvas/core/lib/types';
 const lineColor = common.lineColor;
 import * as common from '../common';
+import { Drawer } from '../draw';
 
 export default makeScene2D(function* (view) {
   const encoderColor = common.encoderColor;
@@ -17,8 +18,8 @@ export default makeScene2D(function* (view) {
   const encoderText = createRef<Text>();
   const decoderText = createRef<Text>();
 
-  const encoderTrapez = createRef<Line>();
-  const decoderTrapez = createRef<Line>();
+  const encoderTrapez = common.trapez(380, 220, 80, {position: new Vector2(-85, 0), rotation: 90, fill: encoderColor});
+  const decoderTrapez = common.trapez(380, 220, 80, {position: new Vector2(85, 0), rotation: -90, fill: decoderColor});
   const bottleNeckRect = createRef<Rect>();
 
   const bottleNeckOpacity = createSignal(1);
@@ -27,22 +28,25 @@ export default makeScene2D(function* (view) {
   const decoderShiftX = createSignal(0);
   const cvaeOpacity = createSignal(0);
 
+  const outputCircle = createRef<Circle>();
+  const inputCircle = createRef<Circle>();
+
   const lineWidth = 3;
 
   view.add(
     <>
-      {common.trapez(380, 220, 80, {position: new Vector2(-85, 0), rotation: 90, fill: encoderColor, ref: encoderTrapez})},
+      {encoderTrapez},
       <Node>
-        <Line stroke={lineColor} lineWidth={lineWidth} points={[new Vector2(-380, 0), new Vector2(-304, 0)]} endArrow arrowSize={8}/>
-        <Circle fill={'white'} position={new Vector2(-380, 0)} width={40} height={40}/>
+        {/* <Line stroke={lineColor} lineWidth={lineWidth} points={[new Vector2(-380, 0), new Vector2(-304, 0)]} endArrow arrowSize={8}/> */}
+        <Circle fill={'white'} position={new Vector2(-380, 0)} width={40} height={40} ref={inputCircle}/>
         <Text text={'Input'} position={new Vector2(-380, 50)} fill={'white'}/>
       </Node>
 
       <Node position={() => new Vector2(decoderShiftX(), 0)}>
-        {common.trapez(380, 220, 80, {position: new Vector2(85, 0), rotation: -90, fill: decoderColor, ref: decoderTrapez})},
+        {decoderTrapez},
         <Node rotation={180}>
-            <Line stroke={lineColor} lineWidth={lineWidth} points={[new Vector2(-380, 0), new Vector2(-304, 0)]} endArrow arrowSize={8}/>
-            <Circle fill={'white'} position={new Vector2(-380, 0)} width={40} height={40}/>
+            {/* <Line stroke={lineColor} lineWidth={lineWidth} points={[new Vector2(-380, 0), new Vector2(-304, 0)]} startArrow arrowSize={8}/> */}
+            <Circle fill={'white'} position={new Vector2(-380, 0)} width={40} height={40} ref={outputCircle}/>
         </Node>
         <Text text={'Output'} position={new Vector2(380, 50)} fill={'white'}/>
       </Node>
@@ -89,6 +93,10 @@ export default makeScene2D(function* (view) {
       </Node>
     </>
   );
+
+    const drawer = new Drawer(view);
+    drawer.makeRightArrow(inputCircle(), encoderTrapez);
+    drawer.makeRightArrow(decoderTrapez, outputCircle());
 
   yield * all(
     bottleNeckOpacity(0, 1),

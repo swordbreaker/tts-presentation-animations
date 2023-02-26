@@ -127,20 +127,21 @@ function createCoder(text: string, width=200, lineProps: LineProps = {}, textPro
 export default makeScene2D(function* (view) {
     const z = createBlocks(5, {}, ['red', 'red', 'blue', 'blue', 'green']);
     const fz = createBlocks(5, {}, ['red', 'red', 'blue', 'blue', 'green']);
-    const decoder = createCoder('decoder', 200, {rotation: 180, fill: common.decoderColor}) as Rect;
+    const decoder = createCoder('decoder', 220, {rotation: 180, fill: common.decoderColor}) as Rect;
 
-    const encoder = createCoder('posterior encoder', 380, {fill: common.encoderColor});
+    const encoder = createCoder('posterior encoder', 420, {fill: common.encoderColor});
     const flow = createBlock('flow');
     const alignment = createMonotonicAlignment() as Rect;
     const projection = createBlock('projection');
-    const textEncoder = createCoder('text encoder', 275, {fill: common.encoderColor});
+    const textEncoder = createCoder('text encoder', 350, {fill: common.encoderColor});
     const hText = createBlocks(3);
     const durationPredictor = createBlock('stochastic duration \n        predictor');
 
-    const spectogram = <Text fill={common.textColor}>Spectrogram</Text>;
-    const cText = <Text fill={common.textColor}>Text</Text>;
-    const noise = <Text fill={common.textColor}>Noise</Text>;
-    const waveform = <Text fill={common.textColor}>Waveform</Text>;
+    // input & output
+    const spectogram = <Text fill={common.textColor}>spectrogram</Text>;
+    const cText = <Text fill={common.textColor}>text</Text>;
+    const noise = <Text fill={common.textColor}>noise</Text>;
+    const waveform = <Text fill={common.textColor}>waveform</Text>;
 
     const leftRect = createRef<Rect>();
     const leftBottomSpace = <Rect height={0}/> as Rect;
@@ -255,7 +256,7 @@ export default makeScene2D(function* (view) {
         text: 'CVAE',
         fill: 'yellow',
         opacity: markSignal,
-        position: new Vector2(-890, 0)});
+        position: new Vector2(-800, 0)});
     view.add(text);
 
     yield * markSignal(1, 1);
@@ -263,17 +264,17 @@ export default makeScene2D(function* (view) {
 
     // draw GAN
     drawer.fillColor = '#ff7e33';
-    const disc = drawer.createBlock("Discriminator");
+    const disc = drawer.createBlock("discriminator");
     disc.absolutePosition(() => decoder.absolutePosition().addX(-700))
     root().add(disc);
 
     yield * all(
-        delay(0.6, root().position(root().position().addX(50), 0.4)),
-        disc.absolutePosition(decoder.absolutePosition().addX(-250), 1)
+        delay(0.6, root().position(root().position().addX(165), 0.4)),
+        disc.absolutePosition(decoder.absolutePosition().addX(-170), 1)
         );
 
     drawer.fillColor = "#038f61";
-    const gen = drawer.createBlock("Generator").opacity(0);
+    const gen = drawer.createBlock("generator").opacity(0);
     root().add(gen);
     gen.absolutePosition(() => decoder.absolutePosition());
     yield * gen.opacity(1, 1);
@@ -288,7 +289,8 @@ export default makeScene2D(function* (view) {
         gen_disc.opacity(0, 1),
         update_g.opacity(0, 1),
         disc.opacity(0, 1),
-        gen.opacity(0, 1)
+        gen.opacity(0, 1),
+        root().position(root().position().addX(-165), 0.4),
     )
 
     // convert to inference

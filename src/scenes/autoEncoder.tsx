@@ -6,10 +6,10 @@ import { all } from '@motion-canvas/core/lib/flow';
 import { createSignal, SignalValue, SimpleSignal } from '@motion-canvas/core/lib/signals';
 import { Center, Color, Vector2 } from '@motion-canvas/core/lib/types';
 import * as common from '../common';
+import { Drawer } from '../draw';
 
 const cirlceColor = "#195db2";
 const transparent = common.transparent;
-
 
 function makeLines(view: View2D, a: Circle[], b: Circle[], opacity: SignalValue<number>) {
   let lines: Line[] = [];
@@ -54,6 +54,9 @@ export default makeScene2D(function* (view) {
   const encoderTrapez = createRef<Line>();
   const decoderTrapez = createRef<Line>();
   const bottleNeckRect = createRef<Rect>();
+
+  const outputCircle = createRef<Circle>();
+  const inputCircle = createRef<Circle>();
 
   const opacity1 = createSignal<number>(1);
 
@@ -134,17 +137,21 @@ export default makeScene2D(function* (view) {
       <Line stroke={common.lineColor} lineWidth={lineWidth} points={[new Vector2(40, 0), new Vector2(85, 0)]} endArrow arrowSize={common.arrowSize} opacity={newBottlenecOpacit}/>
 
       <Node>
-        <Line stroke={common.lineColor} lineWidth={lineWidth} points={[new Vector2(-380, 0), new Vector2(-304, 0)]} endArrow arrowSize={common.arrowSize}/>
-        <Circle fill={'white'} position={new Vector2(-380, 0)} width={40} height={40}/>
+        {/* <Line stroke={common.lineColor} lineWidth={lineWidth} points={[new Vector2(-380, 0), new Vector2(-304, 0)]} endArrow arrowSize={common.arrowSize}/> */}
+        <Circle fill={'white'} position={new Vector2(-380, 0)} width={40} height={40} ref={inputCircle}/>
         <Text text={'Input'} position={new Vector2(-380, 50)} fill={'white'}/>
       </Node>
       <Node rotation={180}>
-        <Line stroke={common.lineColor} lineWidth={lineWidth} points={[new Vector2(-380, 0), new Vector2(-304, 0)]} endArrow arrowSize={common.arrowSize}/>
-        <Circle fill={'white'} position={new Vector2(-380, 0)} width={40} height={40}/>
+        {/* <Line stroke={common.lineColor} lineWidth={lineWidth} points={[new Vector2(-380, 0), new Vector2(-304, 0)]} endArrow arrowSize={common.arrowSize}/> */}
+        <Circle fill={'white'} position={new Vector2(-380, 0)} width={40} height={40} ref={outputCircle}/>
       </Node>
-      <Text text={'Output'} position={new Vector2(380, 50)} fill={'white'}/>
+      <Text text={'Output'} position={new Vector2(380, 50)} fill={'white'} />
     </>
   );
+
+  const drawer = new Drawer(view);
+  drawer.makeRightArrow(decoderRect(), outputCircle());
+  drawer.makeRightArrow(inputCircle(), encoderRect());
 
   makeLines(view, encCicles1, encCicles2, opacity1);
   makeLines(view, encCicles2, encCicles3, opacity1);

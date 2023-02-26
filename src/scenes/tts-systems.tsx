@@ -28,11 +28,11 @@ export default makeScene2D(function* (view) {
     view.add(
     <Node>
     <Text text={"Cascaded TTS systems"} fill={common.textColor} position={cascadePos} fontSize={100}/>
-    <Text text={"End-to-end TTS systems"} fill={common.textColor} position={endToEndToPos} fontSize={100}/>
+    <Text text={"End-to-End TTS systems"} fill={common.textColor} position={endToEndToPos} fontSize={100}/>
     <Rect layout alignItems={'end'} justifyContent={'center'} gap={gap} ref={root}>
         <Rect layout direction={'column'} gap={20} alignItems={'center'} ref={makeRef(figures, 0)}>
             <Image height={imgSize} maxWidth={imgSize} src={textSrc}></Image>
-            <Text text="Input Text" fill={common.textColor}/>,
+            <Text text="input Text" fill={common.textColor}/>,
         </Rect>
         <Rect layout direction={'column'} gap={20} alignItems={'center'} ref={makeRef(figures, 1)}>
             <Image height={imgSize} maxWidth={imgSize} src={textProssessingSrc}></Image>
@@ -40,11 +40,11 @@ export default makeScene2D(function* (view) {
         </Rect>
         <Rect layout direction={'column'} justifyContent={'end'} gap={20} alignItems={'center'} ref={makeRef(figures, 2)}>
             <Image height={imgSize} maxWidth={imgSize} src={mlSrc}></Image>
-            <Text text={'aucustic model'} fill={common.textColor} ref={accusticText}/>
+            <Text text={'Acoustic model'} fill={common.textColor} ref={accusticText}/>
         </Rect>
         <Rect layout direction={'column'} justifyContent={'end'} gap={20} alignItems={'center'} ref={makeRef(figures, 3)}>
             <Image height={imgSize} maxWidth={imgSize} src={mlSrc}></Image>
-            <Text text={'vocoder'} fill={common.textColor}/>
+            <Text text={'Vocoder'} fill={common.textColor}/>
         </Rect>
         <Rect layout direction={'column'} justifyContent={'end'} gap={20} alignItems={'center'} ref={makeRef(figures, 4)}>
             <Image height={imgSize} maxWidth={imgSize} src={waveformSrc}></Image>
@@ -89,7 +89,7 @@ export default makeScene2D(function* (view) {
 
     figures[3].remove();
     lastArrow.points()[0] = figures[2].absolutePosition().addX(imgSize/1.8).addY(-30);
-    accusticText().text('end-to-end model');
+    accusticText().text('End-to-End model');
     yield * accusticText().rotation(2, 0.2);
     yield * accusticText().rotation(-2, 0.2);
     yield * accusticText().rotation(0, 0.2);
