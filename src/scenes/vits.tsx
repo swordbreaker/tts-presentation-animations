@@ -1,6 +1,6 @@
 import { makeScene2D } from '@motion-canvas/2d/lib/scenes';
 import { delay, sequence, waitFor } from '@motion-canvas/core/lib/flow';
-import { Circle, Layout, Line, Rect, Node, View2D, Text, RectProps, TextProps, Image, CircleProps, LineProps, Latex } from '@motion-canvas/2d/lib/components';
+import { Circle, Layout, Line, Rect, Node, View2D, Text, RectProps, TextProps, Image, CircleProps, LineProps, Latex, LatexProps } from '@motion-canvas/2d/lib/components';
 import { createRef, makeRef, range, Reference} from '@motion-canvas/core/lib/utils';
 import { all } from '@motion-canvas/core/lib/flow';
 import { createSignal, SignalValue, SimpleSignal, } from '@motion-canvas/core/lib/signals';
@@ -27,6 +27,7 @@ function createBlock(text: SignalValue<string>, rectProps: RectProps = {}, textP
         ...rectProps
     });
 }
+
 
 function createBlocks(n: number, rectProps: RectProps = {}, colors = ['red', 'blue', 'green']){
     return new Rect({
@@ -145,7 +146,7 @@ export default makeScene2D(function* (view) {
 
     const leftRect = createRef<Rect>();
     const leftBottomSpace = <Rect height={0}/> as Rect;
-    
+
     const muSignma = (
         <Rect justifyContent={'center'}>
             {createBlocks(3)},
@@ -229,38 +230,109 @@ export default makeScene2D(function* (view) {
         root()
     );
 
-    // mark gan
-    const markSignal = createSignal(0);
-    let gan_rect = <Rect
-        width={() => decoder.size().width + 40}
-        height={() => decoder.size().height + 40}
-        stroke="green"
-        lineWidth={3}
-        opacity={markSignal}/> as Rect;
-    view.add(gan_rect);
-    gan_rect.absolutePosition(() => decoder.absolutePosition());
-    let gan_text = new Text({text: 'GAN', fill: 'green', opacity: markSignal})
-        .absolutePosition(() => gan_rect.absolutePosition().add(new Vector2(-200, 0)));
-    view.add(gan_text);
+    // // mark gan
+    // const markSignal = createSignal(0);
+    // let gan_rect = <Rect
+    //     width={() => decoder.size().width + 40}
+    //     height={() => decoder.size().height + 40}
+    //     stroke="green"
+    //     lineWidth={3}
+    //     opacity={markSignal}/> as Rect;
+    // view.add(gan_rect);
+    // gan_rect.absolutePosition(() => decoder.absolutePosition());
+    // let gan_text = new Text({text: 'GAN', fill: 'green', opacity: markSignal})
+    //     .absolutePosition(() => gan_rect.absolutePosition().add(new Vector2(-200, 0)));
+    // view.add(gan_text);
 
 
-    // mark vae
-    let vae_rect = <Rect
-        width={() => root().cacheRect().size.width + 100}
-        height={() => root().cacheRect().size.height + 20}
-        stroke="yellow"
-        lineWidth={3}
-        opacity={markSignal}/> as Rect;
-    view.add(vae_rect);
-    let text = new Text({
-        text: 'CVAE',
-        fill: 'yellow',
-        opacity: markSignal,
-        position: new Vector2(-800, 0)});
-    view.add(text);
+    // // mark vae
+    // let vae_rect = <Rect
+    //     width={() => root().cacheRect().size.width + 100}
+    //     height={() => root().cacheRect().size.height + 20}
+    //     stroke="yellow"
+    //     lineWidth={3}
+    //     opacity={markSignal}/> as Rect;
+    // view.add(vae_rect);
+    // let text = new Text({
+    //     text: 'CVAE',
+    //     fill: 'yellow',
+    //     opacity: markSignal,
+    //     position: new Vector2(-800, 0)});
+    // view.add(text);
 
-    yield * markSignal(1, 1);
-    yield * markSignal(0, 0);
+    // yield * markSignal(1, 1);
+    // yield * markSignal(0, 0);
+
+    // show loss
+    const loss = <Latex height={140} tex="{
+        \color{white}
+        \begin{array}{l}
+        L_{vae} =& L_{recon} + L_{KL} + L_{dur}\\
+        & + L_{adv}(G) + L_{fm}(G)
+        \end{array}
+    }" scale={0}/>;
+    view.add(loss);
+    loss.absolutePosition(new Vector2(1550, 100));
+    yield * loss.scale(1, 1);
+
+    // show recon loss
+    const melOpacity = createSignal(0);
+
+    const lRecon = <Latex height={60} tex="{\color{white} L_{recon} = \left\lVert x_{mel} - \hat{x}_{mel}\right\rVert_1}" scale={melOpacity}/>;
+    view.add(lRecon);
+    lRecon.absolutePosition(new Vector2(340, 300));
+
+    const melHat = <Latex tex="{\color{white} \hat{x}_{mel}}" width={100} scale={melOpacity} opacity={melOpacity}/>;
+    const mel = <Latex tex="{\color{white} x_{mel}}" width={100} scale={melOpacity} opacity={melOpacity}/>;
+    view.add(melHat);
+    view.add(mel);
+    mel.absolutePosition(() => spectogram.absolutePosition().addX(-250));
+    melHat.absolutePosition(() => waveform.absolutePosition().add(new Vector2(-250, -50)));
+    const mel_encoder = drawer.makeDirectedArrow({
+        f1: mel,
+        f2: encoder,
+        anchor1: 'top',
+        anchor2: 'bottom',
+        offset2: new Vector2(-100, -20),
+        edge1: new Vector2(0, -28),
+        edge2: new Vector2(2, 30)}).opacity(melOpacity);
+    const wav_melHat = drawer.makeDirectedArrow({
+        f1: waveform,
+        f2: melHat,
+        anchor1: 'top',
+        anchor2: 'right',
+        edge1: new Vector2(0, -20)}).opacity(melOpacity);
+
+    yield * melOpacity(1, 1);
+
+    yield * all(
+        mel_encoder.stroke('green', 1),
+        wav_melHat.stroke('green', 1),
+        encoder_z.stroke('green', 1),
+        z_decoder.stroke('green', 1),
+        decoder_waveform.stroke('green', 1)
+    );
+
+    yield * all(
+        mel_encoder.stroke('white', 1),
+        wav_melHat.stroke('white', 1),
+        encoder_z.stroke('white', 1),
+        z_decoder.stroke('white', 1),
+        decoder_waveform.stroke('white', 1),
+        melOpacity(0, 1)
+    );
+
+    // show KL loss
+    const klLoss = <Latex tex="{
+        \color{white}
+        \begin{array}{l}
+        L_{KL} =& \log q_\phi(z|x_{lin}) - \\
+        & \log p_\theta(z|c_{text}, A)
+        \end{array}}" height={130} />;
+    view.add(klLoss);
+    klLoss.absolutePosition(new Vector2(300, 300)).scale(0);
+    yield * klLoss.scale(1, 1);
+    yield * klLoss.scale(0, 1);
 
     // draw GAN
     drawer.fillColor = '#ff7e33';
@@ -292,6 +364,8 @@ export default makeScene2D(function* (view) {
         gen.opacity(0, 1),
         root().position(root().position().addX(-165), 0.4),
     )
+
+    yield * loss.scale(0, 1);
 
     // convert to inference
     yield * all(

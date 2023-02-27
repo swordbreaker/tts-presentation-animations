@@ -69,8 +69,8 @@ export default makeScene2D(function* (view) {
 
                     <Node scale={amplitudeWavelenght}>
                         {/* Wavelength */}
-                        <Line points={() => [points1[11], points1[23]().addX(0.4)]} lineWidth={0.1} stroke={'yellow'} end={10} start={-10} startOffset={10} lineDash={[0.1, 0.1]}/>
-                        <Text scale={0.8} text={'wavelenght'} fontSize={1} position={new Vector2(8.4, 1.5)} fill={common.textColor}></Text>
+                        {/* <Line points={() => [points1[11], points1[23]().addX(0.4)]} lineWidth={0.1} stroke={'yellow'} end={10} start={-10} startOffset={10} lineDash={[0.1, 0.1]}/>
+                        <Text scale={0.8} text={'wavelenght'} fontSize={1} position={new Vector2(8.4, 1.5)} fill={common.textColor}></Text> */}
                         
                         {/* Ampltude */}
                         <Line points={() => [new Vector2(points1[5]().x - 0.2, 0), points1[5]().addX(-0.2)]} lineWidth={0.1} stroke={'yellow'} end={10} start={-10} startOffset={10} lineDash={[0.1, 0.1]}/>
